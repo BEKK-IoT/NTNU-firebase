@@ -4,11 +4,41 @@ $(function () {
   var Particle = window.Particle
   var particle = new Particle();
 
-  //ENTER CODE FROM GIST: https://goo.gl/HwtJud UNDER HERE!!
+  var config = {
+    apiKey: "AIzaSyAFkVI4Agc6zDsbqRL8XNCuHfQCDWJfWdo",
+    authDomain: "ntnuplant.firebaseapp.com",
+    databaseURL: "https://ntnuplant.firebaseio.com",
+    storageBucket: "ntnuplant.appspot.com",
+    messagingSenderId: "1023106899913"
+  };
+  var firebaseApp = Firebase.initializeApp(config);
 
+  firebaseApp.database().ref("/watervalue").on('value', function(snapshot) {
+    var chart = $('#content2').highcharts();
+    if(chart) {
+        point = chart.series[0].points[0];
+        point.update(parseInt(snapshot.val()));
+      }
+  });
 
-  // ALL THE CODE UNDER HERE IS JUST SETUP FOR highcharts: http://www.highcharts.com/
-  // REMOVE IF YOU DONT WANT TO USE IT!
+  particle.login({username: 'snorre.edwin@gmail.com', password: 'testNTNU'}).then(
+    function(authData){
+      token = authData.body.access_token
+      var chart = $('#content').highcharts();
+      if(chart) {
+          particle.getEventStream({ deviceId: "53ff72065075535120251687", name:"plantdataDirect", auth: token}).then(function(stream) {
+            stream.on('event', function(eventData) {
+              var value = eventData.data
+              point = chart.series[0].points[0];
+              point.update(parseInt(value));
+            });
+          });
+        }
+    },
+    function(err) {
+      console.log('API call completed on promise fail: ', err);
+    }
+  );
 
   var gaugeOptions = {
 
